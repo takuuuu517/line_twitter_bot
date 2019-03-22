@@ -12,9 +12,11 @@
 #  License for the specific language governing permissions and limitations
 #  under the License.
 
+import credentials
 import os
 import sys
 from argparse import ArgumentParser
+import twitter_data_handle as twitter
 
 from flask import Flask, request, abort
 from linebot import (
@@ -30,8 +32,8 @@ from linebot.models import (
 app = Flask(__name__)
 
 # get channel_secret and channel_access_token from your environment variable
-channel_secret = os.getenv('LINE_CHANNEL_SECRET', None)
-channel_access_token = os.getenv('LINE_CHANNEL_ACCESS_TOKEN', None)
+channel_secret = credentials.LINE_CHANNEL_SECRET
+channel_access_token = credentials.LINE_CHANNEL_ACCESS_TOKEN
 if channel_secret is None:
     print('Specify LINE_CHANNEL_SECRET as environment variable.')
     sys.exit(1)
@@ -41,10 +43,6 @@ if channel_access_token is None:
 
 line_bot_api = LineBotApi(channel_access_token)
 handler = WebhookHandler(channel_secret)
-
-profile = line_bot_api.get_profile(user_id)
-id = profile.user_id
-print(id)
 
 @app.route("/callback", methods=['POST'])
 def callback():
@@ -66,12 +64,28 @@ def callback():
 
 @handler.add(MessageEvent, message=TextMessage)
 def message_text(event):
+    profile = line_bot_api.get_profile(event.source.user_id)
+    id = profile.user_id
+    print("id is {0}".format(id))
+
+    m = twitter.callsomething()
+
+
+
     line_bot_api.reply_message(
         event.reply_token,
-        TextSendMessage(text=event.message.text)
+        TextSendMessage(text=m)
     )
+    sendM(id)
+
+def sendM(id):
+    try:
+        line_bot_api.push_message(id, TextSendMessage(text='Hello World!'))
+    except:
+        print("id is {0}".format(id))
 
 
 
 if __name__ == "__main__":
-    app.run()
+    port = int(os.getenv("PORT", 8000))
+    app.run(host="0.0.0.0", port=port)
