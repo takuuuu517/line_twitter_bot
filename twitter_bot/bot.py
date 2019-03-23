@@ -29,6 +29,8 @@ from linebot.models import (
     MessageEvent, TextMessage, TextSendMessage,
 )
 
+import json
+
 app = Flask(__name__)
 
 # get channel_secret and channel_access_token from your environment variable
@@ -68,22 +70,38 @@ def message_text(event):
     id = profile.user_id
     print("id is {0}".format(id))
 
-    m = twitter.callsomething()
+    message = event.message.text
 
-
+    sending_message = determine_message_to_send(message)
 
     line_bot_api.reply_message(
         event.reply_token,
-        TextSendMessage(text=m)
+        sending_message
     )
-    sendM(id)
+
+
+authentication_in_process = False
+def determine_message_to_send(user_message):
+    sending_message = [TextSendMessage(text="オプションがありません")]
+    global authentication_in_process
+
+    if user_message == "認証":
+        sending_message = [TextSendMessage(text="ここにアクセスして認証してください"), TextSendMessage(text=twitter.authentication()),TextSendMessage(text="承認番号を送ってください")]
+        authentication_in_process = True;
+        return sending_message
+    elif authentication_in_process: # add regex to make sure the format matches
+        twitter.authentication_final(user_message)
+        return TextSendMessage(text="認証番号ありがとう")
+        authentication_in_process = False
+
+    return sending_message
+
 
 def sendM(id):
     try:
         line_bot_api.push_message(id, TextSendMessage(text='Hello World!'))
     except:
         print("id is {0}".format(id))
-
 
 
 if __name__ == "__main__":
