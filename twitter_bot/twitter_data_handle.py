@@ -18,13 +18,11 @@ def authentication():
     except tweepy.TweepError:
         print ('Error! Failed to get request token.')
 
-# def sessiokn_set():
-#     session.set('request_token', auth.request_token)
-
 
 def authentication_final(user_verifier):
     # session.set('request_token', auth.request_token)
     global auth
+    global api
     session =	{
         "request_token": auth.request_token,
     }
@@ -35,8 +33,6 @@ def authentication_final(user_verifier):
     # first...
     auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
     token = session["request_token"]
-    # session.get('request_token')
-    # session.delete('request_token')
     session.pop("request_token")
     auth.request_token = token
 
@@ -44,16 +40,20 @@ def authentication_final(user_verifier):
         ts = auth.get_access_token(user_verifier)
         token = ts[0]
         secret = ts[1]
-        print(token)
-        # print(auth.get_access_token(user_verifier))
+        print(ts)
         auth.set_access_token(token, secret)
         api = tweepy.API(auth)
-        api.update_status('test tweet!') # test
+        # api.update_status('test tweet!!') # test
     except tweepy.TweepError:
         print ('Error! Failed to get access token.')
 
+def tweet(user_message):
+    global auth
+    global api
+    auth.set_access_token(credentials.TEST_TWITTER_ACCESS_TOKEN, credentials.TEST_TWITTER_ACCESS_SECRET)
+    api = tweepy.API(auth)
 
-
+    api.update_status(user_message)
 
 def callsomething():
     public_tweets = api.home_timeline(count=5)

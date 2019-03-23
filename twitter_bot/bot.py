@@ -82,7 +82,7 @@ def message_text(event):
 
 authentication_in_process = False
 def determine_message_to_send(user_message):
-    sending_message = [TextSendMessage(text="オプションがありません")]
+    sending_message = [TextSendMessage(text="ツイートしたよ")]
     global authentication_in_process
 
     if user_message == "認証":
@@ -90,9 +90,11 @@ def determine_message_to_send(user_message):
         authentication_in_process = True;
         return sending_message
     elif authentication_in_process: # add regex to make sure the format matches
-        twitter.authentication_final(user_message)
-        return TextSendMessage(text="認証番号ありがとう")
         authentication_in_process = False
+        twitter.authentication_final(user_message)
+        return TextSendMessage(text="認証されたよ！")
+    else:
+        twitter.tweet(user_message)
 
     return sending_message
 
